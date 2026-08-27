@@ -1,0 +1,14 @@
+[
+  {
+    "title": "Пример прошедшего мероприятия",
+    "date": "2026-04-03",
+    "location": "Бишкек",
+    "url": "https://example.com/sample-past-event"
+  },
+  {
+    "title": "Пример предстоящего мероприятия",
+    "date": "2026-11-12",
+    "location": "Алматы",
+    "url": "https://example.com/sample-upcoming-event"
+  }
+]

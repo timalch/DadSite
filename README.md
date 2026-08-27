@@ -19,12 +19,20 @@ npm run lint
 ## Project layout
 
 ```
+content/        all posts, media entries and events (see content/README.md)
 src/
   app/          routes (App Router)
   components/   shared UI
-  lib/site.ts   site name, nav, and the theme taxonomy — edit here, not inline
+  lib/
+    site.ts     site name, nav, socials, theme taxonomy — edit here, not inline
+    schemas.ts  frontmatter contracts, enforced at build time
+    content.ts  loading, validation and sorting
 docs/           project specification
 ```
+
+Content frontmatter is validated on every build. An invalid file fails the
+build and names both the file and the offending field, rather than publishing
+a broken entry.
 
 ## Secrets
 
@@ -43,7 +51,7 @@ not paste or forward it anywhere.
 | Phase | Scope | Status |
 | --- | --- | --- |
 | 1 | Foundation: scaffold, layout, nav, SEO defaults, analytics, deploy | ✅ done |
-| 2 | Content engine, section pages, blog index, RSS | not started |
+| 2 | Content engine, section pages, blog index, RSS | done |
 | 3 | Interactive Fun/Info homepage graph | not started |
 | 4 | One-time historical Facebook archive import | not started |
 | 5 | Ongoing content-adding skills | not started |

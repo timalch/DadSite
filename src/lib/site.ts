@@ -19,7 +19,16 @@ export const site = {
     (process.env.VERCEL_PROJECT_PRODUCTION_URL
       ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
       : "http://localhost:3000"),
+  /** Language of the site chrome (nav, headings, labels). */
   locale: "en",
+  /**
+   * Default language of the *content*. Most posts are Russian; individual
+   * entries override this with a `lang` field in their frontmatter, which is
+   * applied to the article element so screen readers switch voices correctly.
+   */
+  contentLocale: "ru",
+  /** Locale used to format dates. Change here to restyle every date on the site. */
+  dateLocale: "ru-RU",
 } as const;
 
 export type NavItem = {
@@ -37,6 +46,34 @@ export const nav: NavItem[] = [
   { href: "/social", label: "Social", blurb: "Find me elsewhere" },
 ];
 
+/** The three Media subsections, each populated by the same skill pattern. */
+export const mediaSections = [
+  {
+    slug: "articles",
+    label: "Articles",
+    blurb: "Published writing and press coverage",
+  },
+  {
+    slug: "audio",
+    label: "Audio",
+    blurb: "Podcast appearances and interviews",
+  },
+  { slug: "video", label: "Video", blurb: "Talks, panels and broadcasts" },
+] as const;
+
+export type MediaSectionSlug = (typeof mediaSections)[number]["slug"];
+
+export const socialLinks = [
+  {
+    label: "Facebook",
+    href: "https://facebook.com/almas.chukin/",
+  },
+  {
+    label: "LinkedIn",
+    href: "https://www.linkedin.com/in/almas-chukin-b9023039b/",
+  },
+] as const;
+
 /**
  * Fixed starter taxonomy (handoff doc §6), confirmed by the maintainer.
  * Extending this list is safe; renaming an existing entry is not — the values
@@ -50,3 +87,12 @@ export const themes = [
 ] as const;
 
 export type Theme = (typeof themes)[number];
+
+/** URL-safe slug for a theme, e.g. "Macro-Economy" -> "macro-economy". */
+export function themeSlug(theme: Theme): string {
+  return theme.toLowerCase().replace(/\s+/g, "-");
+}
+
+export function themeFromSlug(slug: string): Theme | undefined {
+  return themes.find((t) => themeSlug(t) === slug);
+}

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <PageShell title="About" intro="Biography and background.">
-      <ComingSoon note="Bio copy lands in phase 2." />
+      <ComingSoon note="Bio copy to be supplied. Replace this placeholder in src/app/about/page.tsx." />
     </PageShell>
   );
 }

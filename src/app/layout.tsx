@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Geist } from "next/font/google";
+import { Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { SiteHeader } from "@/components/site-header";
@@ -8,9 +8,10 @@ import { SiteFooter } from "@/components/site-footer";
 import { site } from "@/lib/site";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const sans = Inter({
+  variable: "--font-inter",
+  // Cyrillic is required: most content on this site is in Russian.
+  subsets: ["latin", "cyrillic"],
   display: "swap",
 });
 
@@ -48,9 +49,9 @@ export default function RootLayout({
   return (
     <html
       lang={site.locale}
-      className={`${geistSans.variable} h-full antialiased`}
+      className={`${sans.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
+      <body className="flex min-h-full flex-col bg-white font-sans text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-neutral-900 focus:px-4 focus:py-2 focus:text-sm focus:text-white dark:focus:bg-white dark:focus:text-neutral-900"

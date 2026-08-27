@@ -1,9 +1,8 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
+/* next/font exposes Inter as --font-inter on <html>; map it onto Tailwind's
+   sans stack so `font-sans` and the prose styles both pick it up. */
 @theme inline {
-  --font-sans: var(--font-geist-sans);
-}
-
-html {
-  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
