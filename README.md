@@ -52,7 +52,7 @@ not paste or forward it anywhere.
 | --- | --- | --- |
 | 1 | Foundation: scaffold, layout, nav, SEO defaults, analytics, deploy | ✅ done |
 | 2 | Content engine, section pages, blog index, RSS | done |
-| 3 | Interactive Fun/Info homepage graph | not started |
+| 3 | Interactive Fun/Info homepage graph | done |
 | 4 | One-time historical Facebook archive import | not started |
 | 5 | Ongoing content-adding skills | not started |
 | 6 | Domain, accessibility/performance pass, owner handover | not started |

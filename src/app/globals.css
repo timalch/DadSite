@@ -6,3 +6,119 @@
 @theme inline {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
+
+/* --- Fun/Info graph -------------------------------------------------------
+   SVG presentation attributes (r, stroke-dasharray) are awkward to drive from
+   utility classes, so the graph keeps its own small stylesheet. Colours are
+   tokens so both themes stay in step. */
+:root {
+  --graph-ink: #a81b45;
+  --graph-axis: #949aa5;
+  --graph-grid: #eef0f4;
+  --graph-label: #15181e;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --graph-ink: #f2547c;
+    --graph-axis: #6b727d;
+    --graph-grid: #1f232a;
+    --graph-label: #e8eaee;
+  }
+}
+
+.graph-grid-line {
+  stroke: var(--graph-grid);
+  stroke-width: 1;
+}
+
+.graph-axis-line {
+  stroke: var(--graph-axis);
+  stroke-width: 1.25;
+}
+
+.graph-axis-label {
+  font-size: 12px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  fill: var(--graph-axis);
+}
+
+.graph-axis-end {
+  font-size: 10.5px;
+  fill: var(--graph-axis);
+}
+
+.graph-connector {
+  fill: none;
+  stroke: var(--graph-ink);
+  stroke-width: 1.5;
+  stroke-dasharray: 2 5;
+  stroke-linecap: round;
+  opacity: 0.75;
+}
+
+.graph-dot {
+  fill: var(--graph-ink);
+  transition: r 0.15s ease;
+}
+
+.graph-halo {
+  fill: var(--graph-ink);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.graph-focus-ring {
+  fill: none;
+  stroke: var(--graph-ink);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 3;
+  opacity: 0;
+}
+
+.graph-hit {
+  fill: transparent;
+}
+
+.graph-label {
+  font-size: 13px;
+  font-weight: 500;
+  fill: var(--graph-label);
+  transition: fill 0.15s ease;
+}
+
+.graph-node {
+  cursor: pointer;
+}
+
+.graph-node:focus {
+  outline: none;
+}
+
+.graph-node:hover .graph-dot,
+.graph-node:focus-visible .graph-dot {
+  r: 8;
+}
+
+.graph-node:hover .graph-halo,
+.graph-node:focus-visible .graph-halo {
+  opacity: 0.16;
+}
+
+.graph-node:focus-visible .graph-focus-ring {
+  opacity: 1;
+}
+
+.graph-node:focus-visible .graph-label,
+.graph-node:hover .graph-label {
+  fill: var(--graph-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .graph-dot,
+  .graph-halo,
+  .graph-label {
+    transition: none;
+  }
+}

@@ -96,3 +96,49 @@ export function themeSlug(theme: Theme): string {
 export function themeFromSlug(slug: string): Theme | undefined {
   return themes.find((t) => themeSlug(t) === slug);
 }
+
+/**
+ * Nodes for the homepage Fun/Info graph (handoff doc §4).
+ *
+ * `info` and `fun` are scores from 0-100 and are the only thing that decides a
+ * dot's position — adjusting the graph means editing a number here, nothing
+ * else. Section-level only: individual posts are never plotted.
+ */
+export type GraphNode = {
+  label: string;
+  href: string;
+  /** Lowercase fragment used to build the dot's accessible name. */
+  blurb: string;
+  /** 0 = sparse, 100 = dense. */
+  info: number;
+  /** 0 = serious, 100 = playful. */
+  fun: number;
+};
+
+export const graphNodes: GraphNode[] = [
+  { label: "Social", href: "/social", blurb: "find me elsewhere", info: 8, fun: 90 },
+  { label: "Events", href: "/events", blurb: "talks, panels and appearances", info: 20, fun: 62 },
+  { label: "About", href: "/about", blurb: "biography and background", info: 34, fun: 44 },
+  { label: "Video", href: "/media/video", blurb: "talks and broadcasts", info: 46, fun: 70 },
+  { label: "Audio", href: "/media/audio", blurb: "podcast appearances", info: 58, fun: 58 },
+  { label: "Blog", href: "/blog", blurb: "notes, essays and posts", info: 70, fun: 40 },
+  { label: "Articles", href: "/media/articles", blurb: "published writing and press", info: 92, fun: 16 },
+];
+
+/** Describe a 0-100 score in words, so labels read as English not coordinates. */
+function band(value: number): string {
+  return value >= 75 ? "high" : value >= 45 ? "medium" : "low";
+}
+
+/**
+ * Full accessible name for a dot. The visible SVG label is aria-hidden, so this
+ * is the entire announcement a screen reader gets — it has to stand alone.
+ */
+export function nodeLabel(node: GraphNode): string {
+  return `${node.label} — ${node.blurb}. ${band(node.info)} information, ${band(node.fun)} fun.`;
+}
+
+/** Ascending information: the order of the connector line and the tab sequence. */
+export const graphNodesByInfo: GraphNode[] = [...graphNodes].sort(
+  (a, b) => a.info - b.info,
+);

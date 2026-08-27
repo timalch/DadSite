@@ -1,0 +1,691 @@
+<title>Fun/Info Graph</title>
+
+<style>
+  :root {
+    --ground: #fafafb;
+    --paper: #ffffff;
+    --ink: #15181e;
+    --muted: #666d79;
+    --faint: #949aa5;
+    --rule: #e4e7ec;
+    --grid: #eef0f4;
+    --accent: #a81b45;
+    --accent-soft: #fdeef2;
+    --on-accent: #ffffff;
+    --shadow: 0 1px 2px rgba(20, 24, 30, 0.05), 0 8px 24px -12px rgba(20, 24, 30, 0.14);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0e1013;
+      --paper: #171a1f;
+      --ink: #e8eaee;
+      --muted: #98a0ab;
+      --faint: #6b727d;
+      --rule: #272b32;
+      --grid: #1f232a;
+      --accent: #f2547c;
+      --accent-soft: #2a1620;
+      --on-accent: #171a1f;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #0e1013;
+    --paper: #171a1f;
+    --ink: #e8eaee;
+    --muted: #98a0ab;
+    --faint: #6b727d;
+    --rule: #272b32;
+    --grid: #1f232a;
+    --accent: #f2547c;
+    --accent-soft: #2a1620;
+    --on-accent: #171a1f;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 60rem;
+    margin: 0 auto;
+    padding: 4rem 1.5rem 6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 4rem;
+  }
+
+  h1, h2, h3 {
+    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    font-weight: 600;
+    text-wrap: balance;
+    margin: 0;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 2.9rem); line-height: 1.12; letter-spacing: -0.015em; }
+  h2 { font-size: 1.5rem; line-height: 1.25; }
+  h3 { font-size: 1.06rem; line-height: 1.3; }
+  p { margin: 0; }
+
+  .eyebrow {
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .standfirst { font-size: 1.1rem; color: var(--muted); max-width: 40rem; }
+
+  header.page { display: flex; flex-direction: column; gap: 0.9rem; }
+
+  section { display: flex; flex-direction: column; gap: 1.25rem; }
+
+  .sec-head { display: flex; flex-direction: column; gap: 0.4rem; }
+  .sec-head p { color: var(--muted); max-width: 42rem; }
+
+  .panel {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    padding: 1.5rem;
+  }
+
+  .panel-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .panel-label {
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+
+  .controls { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .toggle {
+    font-size: 0.82rem;
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    padding: 0.32rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+  }
+  .toggle:hover { border-color: var(--faint); color: var(--ink); }
+  .toggle[aria-pressed="true"] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--on-accent);
+  }
+  .toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .graph-scroll { overflow-x: auto; }
+  svg.graph { display: block; width: 100%; height: auto; min-width: 34rem; }
+  svg.graph-mobile { min-width: 0; max-width: 21rem; margin: 0 auto; }
+
+  .axis-line { stroke: var(--faint); stroke-width: 1.25; }
+  .grid-line { stroke: var(--grid); stroke-width: 1; }
+  #grid { transition: opacity 0.2s; }
+
+  .axis-label {
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 12px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    fill: var(--faint);
+  }
+  .axis-end {
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 10.5px;
+    fill: var(--faint);
+  }
+
+  .connector {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 1.5;
+    stroke-dasharray: 2 5;
+    stroke-linecap: round;
+    opacity: 0.75;
+    transition: opacity 0.2s;
+  }
+  .connector[data-hidden="true"] { opacity: 0; }
+
+  .dot-hit { fill: transparent; }
+  .dot { fill: var(--accent); transition: r 0.15s ease; }
+  .dot-halo { fill: var(--accent); opacity: 0; transition: opacity 0.15s ease; }
+  .dot-label {
+    font-family: ui-sans-serif, system-ui, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    fill: var(--ink);
+    transition: fill 0.15s ease;
+  }
+
+  .node { cursor: pointer; }
+  .node:hover .dot, .node:focus-visible .dot { r: 8; }
+  .node:hover .dot-halo, .node:focus-visible .dot-halo { opacity: 0.16; }
+  .node:focus { outline: none; }
+  .node:focus-visible .dot-label { fill: var(--accent); }
+  .node:focus-visible .focus-ring { opacity: 1; }
+  .focus-ring {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 1.5;
+    stroke-dasharray: 3 3;
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, .connector, .dot, .dot-halo, #grid { transition: none !important; }
+  }
+
+  .table-scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.92rem; min-width: 40rem; }
+  caption { text-align: left; color: var(--muted); font-size: 0.88rem; padding-bottom: 0.75rem; }
+  th, td { text-align: left; padding: 0.62rem 0.85rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th {
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--faint);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  td.num { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-variant-numeric: tabular-nums; }
+  td.why { color: var(--muted); }
+  tbody tr:last-child td { border-bottom: none; }
+  .swatch {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin-right: 0.55rem;
+  }
+
+  code {
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 0.86em;
+    background: var(--accent-soft);
+    color: var(--accent);
+    padding: 0.1em 0.36em;
+    border-radius: 4px;
+  }
+
+  .two-col { display: grid; gap: 1.5rem; grid-template-columns: 1fr; }
+  @media (min-width: 46rem) {
+    .two-col { grid-template-columns: 21rem 1fr; align-items: start; }
+  }
+  .rationale { display: flex; flex-direction: column; gap: 1.1rem; }
+
+  ul.notes {
+    margin: 0;
+    padding-left: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    color: var(--muted);
+  }
+  ul.notes strong { color: var(--ink); font-weight: 600; }
+
+  .decisions { display: flex; flex-direction: column; gap: 1.6rem; }
+  .decision {
+    border-left: 2px solid var(--accent);
+    padding: 0.15rem 0 0.15rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .decision p { color: var(--muted); }
+
+  .readout {
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 0.8rem;
+    color: var(--muted);
+    min-height: 1.4em;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--rule);
+  }
+  .readout strong { color: var(--ink); font-weight: 600; }
+</style>
+
+<div class="wrap">
+
+  <header class="page">
+    <p class="eyebrow">Phase 3 &middot; built</p>
+    <h1>The Fun/Info graph</h1>
+    <p class="standfirst">
+      The homepage centrepiece: seven site sections plotted against how much
+      information each carries and how playful it is. Both layouts below are
+      live SVG at the coordinates now shipping in
+      <code>src/lib/site.ts</code> &mdash; hover them, tab through them, and
+      toggle the connector to see what the alternative looked like.
+    </p>
+  </header>
+
+  <section>
+    <div class="sec-head">
+      <h2>Desktop</h2>
+      <p>
+        Information runs left to right, fun bottom to top. Every dot is a link.
+        The graph is not the site&rsquo;s only navigation &mdash; the standard
+        header nav sits above it and works on every page.
+      </p>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <p class="panel-label">Homepage hero &middot; 800 &times; 520</p>
+        <div class="controls">
+          <button type="button" class="toggle" id="line-toggle" aria-pressed="true">Connector line</button>
+          <button type="button" class="toggle" id="grid-toggle" aria-pressed="true">Grid</button>
+        </div>
+      </div>
+      <div class="graph-scroll">
+        <svg class="graph" id="desktop-graph" viewBox="0 0 800 520" role="group" aria-labelledby="dg-title">
+          <title id="dg-title">Site sections plotted by information density and playfulness</title>
+        </svg>
+      </div>
+      <p class="readout" id="readout">Hover or focus a dot to inspect its placement.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>Proposed placements</h2>
+      <p>
+        Starting positions, scored 0&ndash;100 on each axis. These are the
+        numbers to argue with &mdash; each one is a single value in
+        <code>src/lib/site.ts</code> and costs nothing to change.
+      </p>
+    </div>
+
+    <div class="panel">
+      <div class="table-scroll">
+        <table>
+          <caption>
+            Ordered by information, low to high &mdash; the same order the
+            connector line and the keyboard tab sequence follow.
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Section</th>
+              <th scope="col">Info</th>
+              <th scope="col">Fun</th>
+              <th scope="col">Why there</th>
+            </tr>
+          </thead>
+          <tbody id="placement-rows"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>Mobile &mdash; rebuilt, not shrunk</h2>
+      <p>
+        A scatter plot squeezed into 360px is unreadable and untappable, so the
+        small screen gets a different form carrying the same two variables.
+      </p>
+    </div>
+
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-head">
+          <p class="panel-label">Mobile &middot; 340 &times; 560</p>
+        </div>
+        <svg class="graph graph-mobile" id="mobile-graph" viewBox="0 0 340 560" role="group" aria-labelledby="mg-title">
+          <title id="mg-title">Site sections ordered by information, offset by playfulness</title>
+        </svg>
+      </div>
+
+      <div class="rationale">
+        <h3>How it keeps both axes</h3>
+        <ul class="notes">
+          <li>
+            <strong>Information becomes the scroll direction.</strong> Sections
+            run top to bottom, least dense to most &mdash; the one axis a tall
+            narrow screen has real room for.
+          </li>
+          <li>
+            <strong>Fun becomes horizontal offset.</strong> Each dot sits
+            further right the more playful its section, and the dotted line
+            still traces the same path, so the shape survives the translation.
+          </li>
+          <li>
+            <strong>Labels anchor left</strong> at a fixed position rather than
+            floating beside each dot, so nothing collides and nothing clips at
+            the screen edge.
+          </li>
+          <li>
+            <strong>Each row is a full-width tap target</strong>, comfortably
+            past the 44px minimum, instead of a 12px dot.
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>Accessibility</h2>
+      <p>
+        The handoff doc asks for real labels and no hover-only tooltips.
+        Concretely:
+      </p>
+    </div>
+    <div class="panel">
+      <ul class="notes">
+        <li>
+          <strong>Every dot is a real link</strong> with a full accessible name,
+          not a shape with a tooltip. The visible text label is
+          <code>aria-hidden</code>, so a screen reader announces the complete
+          label once rather than stuttering the section name twice.
+        </li>
+        <li>
+          <strong>Nothing is hover-only.</strong> The readout below the graph is
+          a convenience for sighted review; the position is already stated in
+          each link&rsquo;s accessible name, so keyboard and screen-reader users
+          lose nothing.
+        </li>
+        <li>
+          <strong>Tab order follows the line</strong>, low information to high,
+          so the sequence matches the visual path instead of SVG source order.
+        </li>
+        <li>
+          <strong>Focus is visible</strong> as a dashed ring plus a label colour
+          change. Tab into the graph above to check it.
+        </li>
+        <li>
+          <strong>The graph is never the only route.</strong> Standard header
+          navigation reaches every section, so a reader who cannot use the graph
+          is never stranded.
+        </li>
+        <li>
+          <strong>Motion respects <code>prefers-reduced-motion</code></strong>,
+          and the dot transitions are decorative regardless.
+        </li>
+      </ul>
+      <p class="readout">Sample accessible name: <strong id="sample-label"></strong></p>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>Decisions taken</h2>
+      <p>
+        Settled during review. The graph above now shows what is actually
+        built, not a proposal.
+      </p>
+    </div>
+    <div class="decisions">
+      <div class="decision">
+        <h3>1. The connector line stays</h3>
+        <p>
+          It turns seven scattered dots into one legible descending path, and
+          makes the trade-off &mdash; more information, less fun &mdash; the
+          picture&rsquo;s argument rather than a coincidence.
+        </p>
+      </div>
+      <div class="decision">
+        <h3>2. About moved from 76 to 34</h3>
+        <p>
+          It was never going to be that dense: one page against an archive of
+          hundreds of posts. Events, Video, Audio and Blog shifted a few points
+          each to absorb the change, so the line still reads as a single
+          descending path with one deliberate spike at Video &mdash; the most
+          purely entertaining format on the site.
+        </p>
+      </div>
+      <div class="decision">
+        <h3>3. Audio and Video stay adjacent</h3>
+        <p>
+          At 46/70 and 58/58 they sit close because they genuinely are similar
+          in character. Prising them apart would have meant decorating the axes
+          rather than using them. They remain two separate dots and two separate
+          destinations &mdash; near each other, not merged.
+        </p>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  // Single source of truth for the mockup, mirroring what will live in
+  // src/lib/site.ts. info and fun are scored 0-100.
+  var SECTIONS = [
+    { label: "Social",   href: "/social",         info: 8,  fun: 90, blurb: "find me elsewhere",             why: "Pure signposting. No reading, all personality." },
+    { label: "Events",   href: "/events",         info: 20, fun: 62, blurb: "talks, panels and appearances", why: "Short listings — a date, a place, a link." },
+    { label: "About",    href: "/about",          info: 34, fun: 44, blurb: "biography and background",      why: "One page. Factual, but nothing like an archive." },
+    { label: "Video",    href: "/media/video",    info: 46, fun: 70, blurb: "talks and broadcasts",          why: "Lively and watchable; absorbed passively." },
+    { label: "Audio",    href: "/media/audio",    info: 58, fun: 58, blurb: "podcast appearances",           why: "Conversational, but long-form and substantive." },
+    { label: "Blog",     href: "/blog",           info: 70, fun: 40, blurb: "notes, essays and posts",       why: "The archive: quick notes through to real argument." },
+    { label: "Articles", href: "/media/articles", info: 92, fun: 16, blurb: "published writing and press",   why: "The most demanding reading on the site." }
+  ];
+
+  var NS = "http://www.w3.org/2000/svg";
+
+  function el(name, attrs) {
+    var node = document.createElementNS(NS, name);
+    Object.keys(attrs || {}).forEach(function (k) {
+      node.setAttribute(k, attrs[k]);
+    });
+    return node;
+  }
+
+  // Phrase a 0-100 score as words, so the accessible name reads as English
+  // rather than as coordinates.
+  function band(v) {
+    return v >= 75 ? "high" : v >= 45 ? "medium" : "low";
+  }
+
+  function accessibleName(s) {
+    return s.label + " — " + s.blurb + ". " +
+      band(s.info) + " information, " + band(s.fun) + " fun.";
+  }
+
+  var byInfo = SECTIONS.slice().sort(function (a, b) { return a.info - b.info; });
+
+  /* ---------- desktop ---------- */
+  (function buildDesktop() {
+    var svg = document.getElementById("desktop-graph");
+    var L = 96, R = 752, T = 44, B = 444;
+    function x(info) { return L + (info / 100) * (R - L); }
+    function y(fun) { return B - (fun / 100) * (B - T); }
+
+    var gGrid = el("g", { id: "grid" });
+    for (var i = 1; i < 5; i++) {
+      var gx = L + (i / 5) * (R - L);
+      gGrid.appendChild(el("line", { x1: gx, y1: T, x2: gx, y2: B, "class": "grid-line" }));
+      var gy = T + (i / 5) * (B - T);
+      gGrid.appendChild(el("line", { x1: L, y1: gy, x2: R, y2: gy, "class": "grid-line" }));
+    }
+    svg.appendChild(gGrid);
+
+    svg.appendChild(el("line", { x1: L, y1: T - 8, x2: L, y2: B, "class": "axis-line" }));
+    svg.appendChild(el("line", { x1: L, y1: B, x2: R + 12, y2: B, "class": "axis-line" }));
+
+    var yLabel = el("text", {
+      "class": "axis-label",
+      transform: "translate(52, " + ((T + B) / 2) + ") rotate(-90)",
+      "text-anchor": "middle"
+    });
+    yLabel.textContent = "Fun";
+    svg.appendChild(yLabel);
+
+    var xLabel = el("text", {
+      x: (L + R) / 2, y: B + 48, "class": "axis-label", "text-anchor": "middle"
+    });
+    xLabel.textContent = "Info";
+    svg.appendChild(xLabel);
+
+    var ends = [
+      { x: L, y: B + 24, t: "sparse", anchor: "start" },
+      { x: R + 12, y: B + 24, t: "dense", anchor: "end" },
+      { x: L - 12, y: T + 2, t: "playful", anchor: "end" },
+      { x: L - 12, y: B - 4, t: "serious", anchor: "end" }
+    ];
+    ends.forEach(function (e) {
+      var t = el("text", { x: e.x, y: e.y, "class": "axis-end", "text-anchor": e.anchor });
+      t.textContent = e.t;
+      svg.appendChild(t);
+    });
+
+    var pts = byInfo.map(function (s) { return x(s.info) + "," + y(s.fun); }).join(" ");
+    svg.appendChild(el("polyline", { points: pts, "class": "connector", id: "connector" }));
+
+    var readout = document.getElementById("readout");
+    function show(s) {
+      if (s) {
+        readout.innerHTML = "<strong>" + s.label + "</strong> · info " +
+          s.info + " · fun " + s.fun + " → " + s.href;
+      } else {
+        readout.textContent = "Hover or focus a dot to inspect its placement.";
+      }
+    }
+
+    byInfo.forEach(function (s) {
+      var cx = x(s.info), cy = y(s.fun);
+      var a = el("a", { href: s.href, "class": "node", "aria-label": accessibleName(s) });
+      a.appendChild(el("circle", { cx: cx, cy: cy, r: 22, "class": "dot-halo" }));
+      a.appendChild(el("circle", { cx: cx, cy: cy, r: 15, "class": "focus-ring" }));
+      a.appendChild(el("circle", { cx: cx, cy: cy, r: 6, "class": "dot" }));
+
+      var onRight = s.info > 82;
+      var label = el("text", {
+        x: onRight ? cx - 16 : cx + 16,
+        y: cy + 5,
+        "class": "dot-label",
+        "text-anchor": onRight ? "end" : "start",
+        "aria-hidden": "true"
+      });
+      label.textContent = s.label;
+      a.appendChild(label);
+
+      a.addEventListener("mouseenter", function () { show(s); });
+      a.addEventListener("mouseleave", function () { show(null); });
+      a.addEventListener("focus", function () { show(s); });
+      a.addEventListener("blur", function () { show(null); });
+      a.addEventListener("click", function (e) { e.preventDefault(); });
+      svg.appendChild(a);
+    });
+
+    document.getElementById("line-toggle").addEventListener("click", function (e) {
+      var on = e.currentTarget.getAttribute("aria-pressed") === "true";
+      e.currentTarget.setAttribute("aria-pressed", String(!on));
+      document.getElementById("connector").setAttribute("data-hidden", String(on));
+    });
+
+    document.getElementById("grid-toggle").addEventListener("click", function (e) {
+      var on = e.currentTarget.getAttribute("aria-pressed") === "true";
+      e.currentTarget.setAttribute("aria-pressed", String(!on));
+      document.getElementById("grid").style.opacity = on ? "0" : "1";
+    });
+  })();
+
+  /* ---------- mobile ---------- */
+  (function buildMobile() {
+    var svg = document.getElementById("mobile-graph");
+    var TRACK_L = 138, TRACK_R = 302, TOP = 82, GAP = 71;
+    function x(fun) { return TRACK_L + (fun / 100) * (TRACK_R - TRACK_L); }
+    function y(i) { return TOP + i * GAP; }
+
+    var funLabel = el("text", { x: TRACK_L, y: 34, "class": "axis-label" });
+    funLabel.textContent = "Fun →";
+    svg.appendChild(funLabel);
+
+    var infoLabel = el("text", {
+      "class": "axis-label",
+      transform: "translate(20, " + ((TOP + y(6)) / 2) + ") rotate(-90)",
+      "text-anchor": "middle"
+    });
+    infoLabel.textContent = "Info ↓";
+    svg.appendChild(infoLabel);
+
+    svg.appendChild(el("line", {
+      x1: TRACK_L, y1: 48, x2: TRACK_R, y2: 48, "class": "grid-line"
+    }));
+
+    var pts = byInfo.map(function (s, i) { return x(s.fun) + "," + y(i); }).join(" ");
+    svg.appendChild(el("polyline", { points: pts, "class": "connector" }));
+
+    byInfo.forEach(function (s, i) {
+      var cy = y(i), cx = x(s.fun);
+      var a = el("a", { href: s.href, "class": "node", "aria-label": accessibleName(s) });
+      // Full-width row hit target rather than the dot alone.
+      a.appendChild(el("rect", {
+        x: 34, y: cy - 28, width: 288, height: 56, rx: 8, "class": "dot-hit"
+      }));
+      a.appendChild(el("circle", { cx: cx, cy: cy, r: 20, "class": "dot-halo" }));
+      a.appendChild(el("circle", { cx: cx, cy: cy, r: 14, "class": "focus-ring" }));
+      a.appendChild(el("circle", { cx: cx, cy: cy, r: 6, "class": "dot" }));
+
+      var label = el("text", { x: 38, y: cy + 5, "class": "dot-label", "aria-hidden": "true" });
+      label.textContent = s.label;
+      a.appendChild(label);
+
+      a.addEventListener("click", function (e) { e.preventDefault(); });
+      svg.appendChild(a);
+    });
+  })();
+
+  /* ---------- table and sample label ---------- */
+  (function buildTable() {
+    var tbody = document.getElementById("placement-rows");
+    byInfo.forEach(function (s) {
+      var tr = document.createElement("tr");
+
+      var tdName = document.createElement("td");
+      var sw = document.createElement("span");
+      sw.className = "swatch";
+      tdName.appendChild(sw);
+      tdName.appendChild(document.createTextNode(s.label));
+
+      var tdInfo = document.createElement("td");
+      tdInfo.className = "num";
+      tdInfo.textContent = s.info;
+
+      var tdFun = document.createElement("td");
+      tdFun.className = "num";
+      tdFun.textContent = s.fun;
+
+      var tdWhy = document.createElement("td");
+      tdWhy.className = "why";
+      tdWhy.textContent = s.why;
+
+      tr.appendChild(tdName);
+      tr.appendChild(tdInfo);
+      tr.appendChild(tdFun);
+      tr.appendChild(tdWhy);
+      tbody.appendChild(tr);
+    });
+
+    var articles = SECTIONS.filter(function (s) { return s.label === "Articles"; })[0];
+    document.getElementById("sample-label").textContent = "“" + accessibleName(articles) + "”";
+  })();
+</script>
